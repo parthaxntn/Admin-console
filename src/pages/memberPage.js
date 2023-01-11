@@ -4,31 +4,28 @@ import MemberGrid from "../components/memberGrid";
 import MemberCreate from "../components/MemberCreate";
 import Loader from "../components/loader";
 import GetMembers from "../services/Members/GetMembers";
-import "toastify-js/src/toastify.css"
-import DeleteMembers from "../services/Members/DeleteMembers";
+import "toastify-js/src/toastify.css";
 import { toast } from "react-toastify";
 
-const MemberPage = () => {
+const MemberPage = ({ mode }) => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [addMember, setAddMember] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [dataReserved, setDataReserved] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [seSSion, setSeSSion] = useState("21-22");
+  const [reloadReq, setReloadReq] = useState(false);
 
   const fetch = async (session) => {
     setLoading(true);
     const members = await GetMembers(session);
     setData(members);
     setLoading(false);
-    console.log(members);
   };
 
   useEffect(() => {
-    // fetch("https://tasty-crab-hosiery.cyclic.app/api/admin/members/21-22")
-    fetch("21-22"); // for local testing, use the default session
-    console.log(data);
-  }, []);
+    fetch(seSSion);
+  }, [reloadReq]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -36,11 +33,16 @@ const MemberPage = () => {
     if (dataReserved.length > 0) {
       setData(dataReserved);
     }
-    const list1 = data.filter((element) => element.name.includes(searchText));
-    const list2 = data.filter((element) => element.role.includes(searchText));
-    const list4 = data.filter((element) => element.year.includes(searchText));
+    const list1 = data.filter((element) =>
+      element.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+    const list2 = data.filter((element) =>
+      element.role.toLowerCase().includes(searchText.toLowerCase())
+    );
+    const list4 = data.filter((element) =>
+      element.year.toLowerCase().includes(searchText.toLowerCase())
+    );
     const list_final = list1.concat(list2, list4);
-    console.log(list_final);
     if (list_final.length > 0) {
       setData(list_final);
     } else {
@@ -53,11 +55,10 @@ const MemberPage = () => {
 
   const handleSelect = (e) => {
     const session = e.target.value;
+    setSeSSion(session);
     fetch(session);
   };
   return (
-  
-    
     <div>
       <div className="headBar">
         <button className="btn" onClick={() => setAddMember(!addMember)}>
@@ -87,22 +88,37 @@ const MemberPage = () => {
           </option>
           <option value="20-21">20-21</option>
           <option value="19-20">19-20</option>
-          <option value="18-19">18-19</option>
         </select>
+        <div
+          className="btn"
+          onClick={() => {
+            fetch(seSSion);
+          }}
+        >
+          Reload
+        </div>
       </div>
-      {loading ? <Loader /> : <MemberGrid data={data} />}
+      {loading ? (
+        <Loader />
+      ) : (
+        <MemberGrid
+          data={data}
+          mode={mode}
+          reloadReq={reloadReq}
+          setReloadReq={setReloadReq}
+        />
+      )}
       {addMember && (
-        <MemberCreate addMember={addMember} setAddMember={setAddMember} />
+        <MemberCreate
+          addMember={addMember}
+          setAddMember={setAddMember}
+          mode={mode}
+          reloadReq={reloadReq}
+          setReloadReq={setReloadReq}
+        />
       )}
     </div>
-    
-  
-    
-    
-  )
-  
-
-    
+  );
 };
 
 export default MemberPage;

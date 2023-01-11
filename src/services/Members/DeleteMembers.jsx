@@ -1,19 +1,18 @@
 import axios from 'axios';
-import React from 'react'
 import { toast } from 'react-toastify';
-import ServerUrl from '../../ServerUrl';
 
-const DeleteMembers = async (id) => {
-    try {
-        const res = await axios.delete(
-          `${ServerUrl}/member/${id}`
-        );
-        console.log(res);
-        toast.success("deleted successfully")
-        return res;
-      } catch (err) {
-        return err;
-        // console.log(err);
-      }
+const DeleteMembers = async (id, reloadReq, setReloadReq) => {
+  const ServerUrl = process.env.REACT_APP_SERVER_URL;
+  try {
+    const res = await axios.delete(
+      `${ServerUrl}/member/${id}`
+    );
+    toast.success("deleted successfully");
+    setReloadReq(!reloadReq);
+    return res;
+  } catch (err) {
+    toast.error(err.message);
+    return err;
+  }
 }
 export default DeleteMembers

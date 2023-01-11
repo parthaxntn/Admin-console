@@ -1,32 +1,40 @@
 import React, { useState } from "react";
 import CreateMembers from "../services/Members/CreateMembers";
-import axios from "axios";
-import useCookies from "react-cookie/cjs/useCookies";
+import Loader from "../components/loader";
 
-const MemberCreate = ({ addMember, setAddMember }) => {
+const MemberCreate = ({ addMember, setAddMember, reloadReq, setReloadReq }) => {
   const [name, setName] = useState("John");
   const [image, setImage] = useState();
-  const [role, setRole] = useState("Dev-Wing Member");
+  const [role, setRole] = useState("Dev-Wing");
   const [session, setSession] = useState("22-23");
   const [year, setYear] = useState(2);
   const [social, setSocial] = useState({});
-  let socialTemp = {}
+  const [dataTransfer, setDataTransfer] = useState(false);
 
   function handleSubmit(e) {
     const sendForm = new FormData();
     sendForm.set("name", name);
     sendForm.set("session", session);
-    sendForm.set("socialMedia",JSON.stringify(social));
+    sendForm.set("socialMedia", JSON.stringify(social));
     sendForm.set("year", year);
     sendForm.set("role", role);
     sendForm.set("avatar", image);
-    console.log(sendForm);
-
-    const members = CreateMembers(sendForm);
+    setDataTransfer(true);
+    const members = CreateMembers(
+      sendForm,
+      setDataTransfer,
+      reloadReq,
+      setReloadReq
+    );
   }
 
   return (
     <div className="createPage">
+      {dataTransfer && (
+        <div className="dataTransfer">
+          <Loader />
+        </div>
+      )}
       <p className="btn close" onClick={() => setAddMember(!addMember)}>
         X
       </p>
@@ -44,7 +52,6 @@ const MemberCreate = ({ addMember, setAddMember }) => {
         type="file"
         name="image"
         id="image"
-        // value={image}
         title="Uploaded Image"
         onChange={(e) => {
           const reader = new FileReader();
@@ -122,7 +129,7 @@ const MemberCreate = ({ addMember, setAddMember }) => {
             name="facebook"
             id="facebook"
             value={social.facebook}
-            onChange={(e) => setSocial({...social, facebook: e.target.value})}
+            onChange={(e) => setSocial({ ...social, facebook: e.target.value })}
           />
         </div>
       </fieldset>

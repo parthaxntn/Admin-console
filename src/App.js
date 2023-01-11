@@ -6,62 +6,90 @@ import Navbar from "./components/Navbar";
 import Login from "./components/login";
 import axios from "axios";
 import { useEffect } from "react";
-import {get} from 'react-cookie'
+import { CookiesProvider } from "react-cookie";
 import useCookies from "react-cookie/cjs/useCookies";
-import {CookiesProvider, Cookies} from 'react-cookie'
-import { useContext } from "react";
-import { createContext } from "react";
+import { MdEventNote, MdGroups } from "react-icons/md";
 
 function App() {
   const [pageRoute, setPageRoute] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
-  const [cookies, setCookie, removeCookie] = useCookies();
+  const [cookies, setCookie, removeCookie] = useCookies(["css"]);
+  const [mode, setMode] = useState(true);
+  const [clicked, setClicked] = useState(false);
 
-  axios.defaults.withCredentials = true
-  useEffect(()=>{
-    if (cookies.CSS_Website!=='undefined' && cookies.CSS_Website) {
-      console.log(typeof(cookies.CSS_Website));
-      setAuthenticated(true)
+  axios.defaults.withCredentials = true;
+
+  useEffect(() => {
+    if (cookies.CSS_Website !== "undefined" && cookies.CSS_Website) {
+      setAuthenticated(true);
+    } else {
+      setAuthenticated(false);
     }
-    else{
-      console.log(cookies);
-      console.log(document.cookie);
-      setAuthenticated(false)
+  }, [cookies.CSS_Website]);
+
+  useEffect(() => {
+    if (cookies.Mode !== "false" && cookies.Mode) {
+      setMode(true);
+    } else {
+      setMode(false);
     }
-  },[cookies.CSS_Website])
+  }, [cookies.Mode]);
+
+  const handleRouteChange = (e) => {
+    setPageRoute(!pageRoute);
+    if (e && e.stopPropagation) {
+      e.stopPropagation(); //for w3c browsers
+      e.cancelBubble = true; //for microsoft browsers
+    }
+  };
 
   return (
     <>
       <CookiesProvider>
-
-      <Navbar setIn={setAuthenticated} In={authenticated} />
-      {authenticated ? (
-        <div className="App">
-          <div className="controlBoard">
-            <p
-              id="eve"
-              onClick={() => setPageRoute(!pageRoute)}
-              className={pageRoute ? null : "activeLink"}
+        <Navbar
+          setIn={setAuthenticated}
+          In={authenticated}
+          mode={mode}
+          setMode={setMode}
+        />
+        {authenticated ? (
+          <div className={mode ? "App bright" : "App dark"}>
+            <div
+              className={
+                clicked
+                  ? "controlBoard expandControl"
+                  : "controlBoard shrinkControl"
+              }
+              onClick={() => setClicked(!clicked)}
+              title="Control Board (Click to expand)"
+            >
+              <p
+                id="eve"
+                onClick={handleRouteChange}
+                className={pageRoute ? null : "activeLink"}
               >
-              Events
-            </p>
-            <p
-              id="mem"
-              onClick={() => setPageRoute(!pageRoute)}
-              className={pageRoute ? "activeLink" : null}
+                <MdEventNote /> {clicked ? "Events" : ""}
+              </p>
+              <p
+                id="mem"
+                onClick={handleRouteChange}
+                className={pageRoute ? "activeLink" : null}
               >
-              Members
-            </p>
+                <MdGroups /> {clicked ? "Members" : ""}
+              </p>
+            </div>
+            <div className="pages">
+              {pageRoute ? (
+                <MemberPage mode={mode} />
+              ) : (
+                <EventPage mode={mode} />
+              )}
+            </div>
           </div>
-          <div className="pages">
-            {pageRoute ? <MemberPage /> : <EventPage />}
-          </div>
-          {/* <AuthPage /> */}
-        </div>
-      ) : (
-        <Login setIn={setAuthenticated} In={authenticated} />
+        ) : (
+          <Login setIn={setAuthenticated} In={authenticated} mode={mode} />
         )}
-        </CookiesProvider>
+      </CookiesProvider>
     </>
   );
 }

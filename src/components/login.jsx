@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import "../styles/login.css";
 import { toast } from "react-toastify";
 import { useCookies } from "react-cookie";
-import { useEffect } from "react";
 
 
-const Login = ({ setIn, In }) => {
+const Login = ({ setIn, In, mode }) => {
+  const ServerUrl = process.env.REACT_APP_SERVER_URL;
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [cookies, setCookie, removeCookie] = useCookies(['css']);
@@ -16,32 +16,30 @@ const Login = ({ setIn, In }) => {
     e.preventDefault();
     async function login() {
       try {
-        // console.log(sendData);
-
         const res = await axios.post(
-          "http://localhost:5000/api/admin/login",
+          `${ServerUrl}/login`,
           {
-            "email":email,
-            "password":password
+            "email": email,
+            "password": password
           }
         );
-        
+
         if (res.status === 201) {
-          setCookie("CSS_Website",res.data.token,{path:'/'})
+          setCookie("CSS_Website", res.data.token, { path: '/' })
           setIn(true);
         } else {
           toast.error("Wrong email or password");
         }
       } catch (err) {
-        console.log(err);
-        toast.error("error occured while login");
+        // console.log(err);
+        toast.error(err.message);
       }
     }
     login();
   };
 
   return (
-    <div className="login">
+    <div className={mode ? "login bright" : "login dark"}>
       <div className="Form">
         <h1>Login</h1>
         <form>
